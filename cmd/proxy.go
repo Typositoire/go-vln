@@ -27,8 +27,9 @@ TODO`,
 func init() {
 	rootCmd.AddCommand(proxyCmd)
 
-	proxyCmd.Flags().StringP("backend", "b", "vault", "SymlinkDB Backend")
 	proxyCmd.Flags().StringP("vault-addr", "A", "http://127.0.0.1:8200", "Address of the vault server where symlinkDB is.")
+	proxyCmd.Flags().StringP("vault-app-role-id", "r", "placeHolder", "Vault app role id for symlinksDB access.")
+	proxyCmd.Flags().StringP("vault-app-role-secret", "R", "placeHolder", "Vault app role secret for symlinksDB access.")
 
 	viper.BindPFlags(proxyCmd.Flags())
 }

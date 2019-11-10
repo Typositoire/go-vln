@@ -2,7 +2,6 @@ package proxy
 
 import (
 	"io/ioutil"
-	"strings"
 
 	"github.com/spf13/viper"
 	"github.com/typositoire/go-vln/backend"
@@ -34,7 +33,7 @@ func NewProxyClient() (PClient, error) {
 	)
 
 	logger := log.WithFields(log.Fields{
-		"component": "proxy_client",
+		"component": "proxy.proxy_client",
 	})
 
 	log.SetFormatter(&log.JSONFormatter{})
@@ -48,7 +47,15 @@ func NewProxyClient() (PClient, error) {
 	switch viper.GetString("backend") {
 	case "vault":
 		be, err = backend.NewBackend("vault")
+	case "file":
+		be, err = backend.NewBackend("file")
 	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = be.Auth()
 
 	if err != nil {
 		return nil, err
@@ -98,8 +105,14 @@ func (pc pClient) processRequest(c echo.Context) error {
 	headers := c.Request().Header
 	method := c.Request().Method
 	uri := c.Request().RequestURI
+	backendCanProcess := pc.backend.BackendCanProcess(c.Request())
+	backendIsInit, err := pc.backend.BackendIsInit()
 
-	if method != "GET" || strings.HasPrefix(uri, "/v1/sys") {
+	if err != nil {
+		return err
+	}
+
+	if !backendCanProcess || !backendIsInit {
 		pc.logger.Infoln("Not a get request, not handling.")
 		resp, err = pc.passToVault(uri, body, method, headers)
 	} else {
@@ -108,7 +121,13 @@ func (pc pClient) processRequest(c echo.Context) error {
 		if err != nil {
 			return err
 		}
-		resp, err = pc.passToVault(realPath, body, method, headers)
+
+		if realPath == "" {
+			pc.logger.Infoln("Empty symlink location, assuming straight proxy.")
+			resp, err = pc.passToVault(uri, body, method, headers)
+		} else {
+			resp, err = pc.passToVault(realPath, body, method, headers)
+		}
 	}
 
 	if err != nil {

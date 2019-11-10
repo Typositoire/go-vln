@@ -14,6 +14,7 @@ var (
 	cfgFile       string
 	logLevel      string
 	backend       string
+	filePath      string
 	vaultAddr     string
 	version       string
 )
@@ -44,6 +45,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.go-vln.yaml)")
 	rootCmd.PersistentFlags().StringVarP(&logLevel, "log-level", "l", "info", "Extra output")
 	rootCmd.PersistentFlags().StringVarP(&backend, "backend", "b", "vault", "SymlinkDB backend")
+	rootCmd.PersistentFlags().StringVarP(&filePath, "be-file-path", "f", "./db.json", "Path to file containing the KV Database in json.")
 	rootCmd.PersistentFlags().StringVarP(&vaultAddr, "be-vault-addr", "a", "http://127.0.0.1:8200", "Vault ADDR to get secrets from.")
 	rootCmd.PersistentFlags().StringVarP(&symlinkDBPath, "symlinkdb-path", "p", "secret/data/vln/symlinksdb", "Path to secret containing symlinks KV.")
 
@@ -52,6 +54,7 @@ func init() {
 	viper.BindPFlag("log-level", rootCmd.PersistentFlags().Lookup("log-level"))
 	viper.BindPFlag("config", rootCmd.PersistentFlags().Lookup("config"))
 	viper.BindPFlag("backend", rootCmd.PersistentFlags().Lookup("backend"))
+	viper.BindPFlag("be-file-path", rootCmd.PersistentFlags().Lookup("be-file-path"))
 	viper.BindPFlag("be-vault-addr", rootCmd.PersistentFlags().Lookup("be-vault-addr"))
 	viper.BindPFlag("symlinkdb-path", rootCmd.PersistentFlags().Lookup("symlinkdb-path"))
 
