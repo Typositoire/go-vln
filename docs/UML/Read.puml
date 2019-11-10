@@ -3,4 +3,6 @@ VaultClient -> VaultProxy: GET Request not starting with /v1/sys
 VaultProxy -> VaultProxyBackend: Check for existing symlink
 VaultProxyBackend -> VaultProxy: Returns symlink location
 VaultProxy -> VaultServer: Read value at symlink location
+VaultServer -> VaultProxy: Returns payload
+VaultProxy -> VaultClient: Returns payload as is
 @enduml
