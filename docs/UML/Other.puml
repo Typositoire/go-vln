@@ -1,0 +1,4 @@
+@startuml
+VaultClient -> VaultProxy: Non-GET Request or starting with /v1/sys
+VaultProxy -> VaultServer: Proxy Request as is
+@enduml
