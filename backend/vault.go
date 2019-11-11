@@ -2,7 +2,6 @@ package backend
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -94,7 +93,6 @@ func (b vaultBackend) BackendCanProcess(r *http.Request) bool {
 }
 
 func (b vaultBackend) FindTarget(path string) (string, error) {
-	fmt.Println(b.SymlinkDBPath)
 	resp, err := b.VaultClient.Logical().Read(b.SymlinkDBPath)
 
 	if err != nil {
@@ -102,14 +100,11 @@ func (b vaultBackend) FindTarget(path string) (string, error) {
 		return "", err
 	}
 
-	fmt.Print("DEBUG: ")
-	fmt.Println(resp)
-
-	// for k, v := range resp.Data["data"].(map[string]interface{}) {
-	// 	if path == k {
-	// 		return v.(string), nil
-	// 	}
-	// }
+	for k, v := range resp.Data["data"].(map[string]interface{}) {
+		if path == k {
+			return v.(string), nil
+		}
+	}
 
 	return path, nil
 }
