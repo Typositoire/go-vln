@@ -1,7 +1,6 @@
 package backend
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -10,12 +9,12 @@ import (
 	"github.com/go-resty/resty/v2"
 	"github.com/spf13/viper"
 
+	vaultapi "github.com/hashicorp/vault/api"
 	log "github.com/sirupsen/logrus"
 )
 
 type vaultBackend struct {
-	VaultURL      string
-	VaultToken    string
+	VaultClient   *vaultapi.Client
 	SymlinkDBPath string
 	HTTPClient    *resty.Client
 	Logger        *log.Entry
@@ -28,6 +27,16 @@ func newVaultBackend(vaultURL, symlinkDBPath string) (Backend, error) {
 
 	log.SetFormatter(&log.JSONFormatter{})
 
+	config := &vaultapi.Config{
+		Address: vaultURL,
+	}
+
+	vClient, err := vaultapi.NewClient(config)
+
+	if err != nil {
+		return nil, err
+	}
+
 	client := resty.New()
 
 	client.
@@ -35,7 +44,7 @@ func newVaultBackend(vaultURL, symlinkDBPath string) (Backend, error) {
 		SetLogger(logger)
 
 	return &vaultBackend{
-		VaultURL:      vaultURL,
+		VaultClient:   vClient,
 		SymlinkDBPath: symlinkDBPath,
 		HTTPClient:    client,
 		Logger:        logger,
@@ -43,38 +52,30 @@ func newVaultBackend(vaultURL, symlinkDBPath string) (Backend, error) {
 }
 
 func (b *vaultBackend) Auth() error {
-	resp, err := b.HTTPClient.R().
-		SetBody(map[string]string{
-			"role_id":   viper.GetString("vault-app-role-id"),
-			"secret_id": viper.GetString("vault-app-role-secret"),
-		}).
-		Post("/auth/approle/login")
+	resp, err := b.VaultClient.Logical().Write("auth/approle/login", map[string]interface{}{
+		"role_id":   viper.GetString("vault-app-role-id"),
+		"secret_id": viper.GetString("vault-app-role-secret"),
+	})
 
 	if err != nil {
 		return err
 	}
 
-	var body map[string]interface{}
+	if resp.Auth == nil {
+		return errors.New("no auth info returned")
+	}
 
-	fmt.Println(string(resp.Body()))
-
-	json.Unmarshal(resp.Body(), &body)
-
-	b.VaultToken = body["auth"].(map[string]interface{})["client_token"].(string)
+	b.VaultClient.SetToken(resp.Auth.ClientToken)
 
 	return nil
 }
 
 func (b vaultBackend) BackendIsInit() (bool, error) {
-	resp, err := b.HTTPClient.R().SetHeader("X-Vault-Token", b.VaultToken).Get(b.SymlinkDBPath)
+	_, err := b.VaultClient.Logical().Read(b.SymlinkDBPath)
 
 	if err != nil {
 		b.Logger.Errorln(err)
 		return false, err
-	}
-
-	if resp.StatusCode() == 404 {
-		return false, nil
 	}
 
 	return true, nil
@@ -93,32 +94,22 @@ func (b vaultBackend) BackendCanProcess(r *http.Request) bool {
 }
 
 func (b vaultBackend) FindTarget(path string) (string, error) {
-	var (
-		body map[string]interface{}
-	)
-
-	resp, err := b.HTTPClient.R().SetHeader("X-Vault-Token", b.VaultToken).Get(b.SymlinkDBPath)
+	fmt.Println(b.SymlinkDBPath)
+	resp, err := b.VaultClient.Logical().Read(b.SymlinkDBPath)
 
 	if err != nil {
-		b.Logger.Errorln(err)
+		b.Logger.Errorln("DEBUG1" + err.Error())
 		return "", err
 	}
 
-	err = json.Unmarshal(resp.Body(), &body)
-	if err != nil {
-		b.Logger.Errorln(err)
-		return "", err
-	}
+	fmt.Print("DEBUG: ")
+	fmt.Println(resp)
 
-	if resp.StatusCode() > 299 {
-		fmt.Println(string(resp.Body()))
-		return "", errors.New("Error")
-	}
-	for k, v := range body["data"].(map[string]interface{})["data"].(map[string]interface{}) {
-		if path == k {
-			return v.(string), nil
-		}
-	}
+	// for k, v := range resp.Data["data"].(map[string]interface{}) {
+	// 	if path == k {
+	// 		return v.(string), nil
+	// 	}
+	// }
 
 	return path, nil
 }
