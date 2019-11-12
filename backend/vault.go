@@ -2,8 +2,6 @@ package backend
 
 import (
 	"errors"
-	"net/http"
-	"strings"
 
 	"github.com/go-resty/resty/v2"
 	"github.com/spf13/viper"
@@ -78,18 +76,6 @@ func (b vaultBackend) BackendIsInit() (bool, error) {
 	}
 
 	return true, nil
-}
-
-func (b vaultBackend) BackendCanProcess(r *http.Request) bool {
-	if r.Method != "GET" {
-		return false
-	}
-
-	if strings.HasPrefix(r.RequestURI, "/v1/sys") {
-		return false
-	}
-
-	return true
 }
 
 func (b vaultBackend) FindTarget(path string) (string, error) {

@@ -2,6 +2,8 @@ package proxy
 
 import (
 	"io/ioutil"
+	"net/http"
+	"strings"
 
 	"github.com/spf13/viper"
 	"github.com/typositoire/go-vln/backend"
@@ -27,11 +29,6 @@ type pClient struct {
 
 // NewProxyClient ...
 func NewProxyClient() (PClient, error) {
-	var (
-		be  backend.Backend
-		err error
-	)
-
 	logger := log.WithFields(log.Fields{
 		"component": "proxy.proxy_client",
 	})
@@ -44,12 +41,7 @@ func NewProxyClient() (PClient, error) {
 		SetHostURL(viper.GetString("vault-addr")).
 		SetLogger(logger)
 
-	switch viper.GetString("backend") {
-	case "vault":
-		be, err = backend.NewBackend("vault")
-	case "file":
-		be, err = backend.NewBackend("file")
-	}
+	be, err := backend.NewBackend(viper.GetString("backend"))
 
 	if err != nil {
 		return nil, err
@@ -105,7 +97,7 @@ func (pc pClient) processRequest(c echo.Context) error {
 	headers := c.Request().Header
 	method := c.Request().Method
 	uri := c.Request().RequestURI
-	backendCanProcess := pc.backend.BackendCanProcess(c.Request())
+	backendCanProcess := canProcess(c.Request())
 	backendIsInit, err := pc.backend.BackendIsInit()
 
 	if err != nil {
@@ -135,4 +127,16 @@ func (pc pClient) processRequest(c echo.Context) error {
 	}
 
 	return c.String(resp.StatusCode(), string(resp.Body()))
+}
+
+func canProcess(r *http.Request) bool {
+	if r.Method != "GET" {
+		return false
+	}
+
+	if strings.HasPrefix(r.RequestURI, "/v1/sys") {
+		return false
+	}
+
+	return true
 }
