@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/spf13/viper"
 	"github.com/typositoire/go-vln/backend"
 
 	"github.com/facebookgo/grace/gracehttp"
@@ -28,7 +27,7 @@ type pClient struct {
 }
 
 // NewProxyClient ...
-func NewProxyClient() (PClient, error) {
+func NewProxyClient(options map[string]string) (PClient, error) {
 	logger := log.WithFields(log.Fields{
 		"component": "proxy.proxy_client",
 	})
@@ -38,10 +37,10 @@ func NewProxyClient() (PClient, error) {
 	client := resty.New()
 
 	client.
-		SetHostURL(viper.GetString("vault-addr")).
+		SetHostURL(options["hostURL"]).
 		SetLogger(logger)
 
-	be, err := backend.NewBackend(viper.GetString("backend"))
+	be, err := backend.NewBackend(options)
 
 	if err != nil {
 		return nil, err

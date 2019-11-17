@@ -14,7 +14,16 @@ var proxyCmd = &cobra.Command{
 and usage of using your command. For example:
 TODO`,
 	Run: func(cmd *cobra.Command, args []string) {
-		p, err := proxy.NewProxyClient()
+		options := make(map[string]string)
+		options["backend"] = viper.GetString("backend")
+		options["hostURL"] = viper.GetString("vault-addr")
+		options["beVaultAddr"] = viper.GetString("be-vault-addr")
+		options["beVaultSymlinkDBPath"] = viper.GetString("be-vault-symlinkdbpath")
+		options["beFilePath"] = viper.GetString("be-file-path")
+		options["beGitRepository"] = viper.GetString("be-git-repository")
+		options["beGitAccessToken"] = viper.GetString("be-git-accesstoken")
+
+		p, err := proxy.NewProxyClient(options)
 
 		if err != nil {
 			panic(err)
