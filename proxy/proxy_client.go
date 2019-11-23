@@ -63,7 +63,7 @@ func (pc pClient) Run() {
 	e := echo.New()
 	pc.setupRoutes(e)
 	e.Use(middleware.Logger())
-	// e.Use(middleware.Recover())
+	e.Use(middleware.Recover())
 	e.Use(middleware.RequestID())
 
 	e.Server.Addr = ":1323"

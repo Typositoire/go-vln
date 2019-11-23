@@ -78,16 +78,51 @@ func TestFileBackendAuthFailure(t *testing.T) {
 	}
 }
 
-// func TestRun(t *testing.T) {
-// 	// Mock
-// 	mockCtrl := gomock.NewController(t)
-// 	defer mockCtrl.Finish()
+// func TestReadSecret(t *testing.T) {
+// 	e := echo.New()
+// 	req := httptest.NewRequest(echo.GET, "http://localhost/v1/sys/health", nil)
+// 	rec := httptest.NewRecorder()
+// 	c := e.NewContext(req, rec)
+// 	c.SetPath("/")
 
-// 	mockPC := mocks.NewMockPClient(mockCtrl)
+// 	// Prepare empty file backend
+// 	content := "{}"
 
-// 	mockPC.EXPECT().Run().Times(1)
+// 	f, err := ioutil.TempFile("/tmp", "db_")
 
-// 	mockPC.Run()
+// 	if err != nil {
+// 		t.Fatalf("Unexpected error, got %s", err.Error())
+// 	}
+
+// 	_, err = f.Write([]byte(content))
+
+// 	if err != nil {
+// 		t.Fatalf("Unexpected error, got %s", err.Error())
+// 	}
+
+// 	defer f.Close()
+// 	defer os.Remove(f.Name())
+
+// 	options := make(map[string]string)
+// 	options["backend"] = "file"
+// 	options["beFilePath"] = f.Name()
+
+// 	be, err := backend.NewBackend(options)
+
+// 	if err != nil {
+// 		t.Fatalf("Unexpected error, got %s", err.Error())
+// 	}
+
+// 	log := logrus.New()
+// 	log.Out = ioutil.Discard
+
+// 	pc := &pClient{
+// 		backend:    be,
+// 		httpClient: nil,
+// 		logger:     log.WithTime(time.Now()),
+// 	}
+
+// 	if assert.NoError(t, pc.processRequest(c)) {
+// 		assert.Equal(t, http.StatusOK, rec.Code)
+// 	}
 // }
-
-func Test
