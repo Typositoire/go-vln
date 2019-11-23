@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
 
 // Backend ""
@@ -19,22 +18,25 @@ type backend struct {
 }
 
 // NewBackend ""
-func NewBackend(backend string) (Backend, error) {
+func NewBackend(options map[string]string) (Backend, error) {
 	var (
 		be  Backend
 		err error
 	)
 
-	switch backend {
+	switch options["backend"] {
 	case "vault":
-		be, err = newVaultBackend(viper.GetString("be-vault-addr"), viper.GetString("be-vault-symlinkdbpath"))
+		be, err = newVaultBackend(options["beVaultAddr"], options["beVaultSymlinkDBPath"])
 	case "file":
-		be, err = newFileBackend(viper.GetString("be-file-path"))
+		be, err = newFileBackend(options["beFilePath"])
 	case "git":
-		be, err = newGitBackend(viper.GetString("be-git-repository"), viper.GetString("be-git-accesstoken"))
+		be, err = newGitBackend(options["beGitRepository"], options["beGitAccessToken"])
+	case "":
+		be = nil
+		err = errors.New("empty backend")
 	default:
 		be = nil
-		err = errors.New("invalid backend " + backend)
+		err = errors.New("invalid backend " + options["backend"])
 	}
 
 	return be, err

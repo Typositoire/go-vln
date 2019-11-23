@@ -20,6 +20,7 @@ require (
 	github.com/go-resty/resty/v2 v2.1.0
 	github.com/go-test/deep v1.0.4 // indirect
 	github.com/golang/groupcache v0.0.0-20191027212112-611e8accdfc9 // indirect
+	github.com/golang/mock v1.3.1
 	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/google/pprof v0.0.0-20191028172815-5e965273ee43 // indirect
 	github.com/hashicorp/go-hclog v0.10.0 // indirect
@@ -29,6 +30,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/hashicorp/yamux v0.0.0-20190923154419-df201c70410d // indirect
+	github.com/jarcoal/httpmock v1.0.4
 	github.com/json-iterator/go v1.1.8 // indirect
 	github.com/jstemmer/go-junit-report v0.9.1 // indirect
 	github.com/julienschmidt/httprouter v1.3.0 // indirect
@@ -47,6 +49,7 @@ require (
 	github.com/sirupsen/logrus v1.4.3-0.20191026113918-67a7fdcf741f
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.5.0
+	github.com/stretchr/testify v1.4.0
 	github.com/valyala/fasttemplate v1.1.0 // indirect
 	go.opencensus.io v0.22.1 // indirect
 	golang.org/x/crypto v0.0.0-20191029031824-8986dd9e96cf // indirect
