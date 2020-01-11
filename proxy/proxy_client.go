@@ -125,6 +125,9 @@ func (pc pClient) processRequest(c echo.Context) error {
 		return err
 	}
 
+	c.Response().Header().Set("X-VLN-REQUESTED", c.Request().RequestURI)
+	c.Response().Header().Set("X-VLN-SERVED", realPath)
+
 	return c.String(resp.StatusCode(), string(resp.Body()))
 }
 
